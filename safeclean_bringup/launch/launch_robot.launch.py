@@ -16,7 +16,7 @@ from launch_ros.actions import Node
 
 def generate_launch_description():
 
-    package_name='safecleanrobot' 
+    package_name='safeclean_bringup' 
 
     rsp = IncludeLaunchDescription(
                 PythonLaunchDescriptionSource([os.path.join(
@@ -31,20 +31,12 @@ def generate_launch_description():
     # )
 
 
-    twist_mux_params = os.path.join(get_package_share_directory(package_name),'safeclean_bringup','config','twist_mux.yaml')
-    twist_mux = Node(
-            package="twist_mux",
-            executable="twist_mux",
-            parameters=[twist_mux_params],
-            remappings=[('/cmd_vel_out','/diff_cont/cmd_vel_unstamped')]
-        )
-
     
 
 
     robot_description = Command(['ros2 param get --hide-type /robot_state_publisher robot_description'])
 
-    controller_params_file = os.path.join(get_package_share_directory(package_name),'safeclean_bringup','config','my_controllers.yaml')
+    controller_params_file = os.path.join(get_package_share_directory(package_name),'config','my_controllers.yaml')
 
     controller_manager = Node(
         package="controller_manager",
@@ -57,7 +49,7 @@ def generate_launch_description():
 
     diff_drive_spawner = Node(
         package="controller_manager",
-        executable="spawner.py",
+        executable="spawner",
         arguments=["diff_cont"],
     )
 
@@ -70,7 +62,7 @@ def generate_launch_description():
 
     joint_broad_spawner = Node(
         package="controller_manager",
-        executable="spawner.py",
+        executable="spawner",
         arguments=["joint_broad"],
     )
 
@@ -104,7 +96,7 @@ def generate_launch_description():
     return LaunchDescription([
         rsp,
         # joystick,
-        twist_mux,
+        # twist_mux,
         delayed_controller_manager,
         delayed_diff_drive_spawner,
         delayed_joint_broad_spawner
