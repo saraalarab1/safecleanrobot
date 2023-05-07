@@ -19,16 +19,16 @@ from geometry_msgs.msg      import Point
 from cv_bridge              import CvBridge, CvBridgeError
 import fire_detector.process_image as proc
 
-class DetectBall(Node):
+class DetectFire(Node):
 
     def __init__(self):
-        super().__init__('detect_ball')
+        super().__init__('detect_fire')
 
         self.get_logger().info('Looking for fire')
         self.image_sub = self.create_subscription(Image,"/image_in",self.callback,rclpy.qos.QoSPresetProfiles.SENSOR_DATA.value)
         self.image_out_pub = self.create_publisher(Image, "/image_out", 1)
         self.image_tuning_pub = self.create_publisher(Image, "/image_tuning", 1)
-        self.ball_pub  = self.create_publisher(Point,"/detected_ball",1)
+        self.ball_pub  = self.create_publisher(Point,"/detected_fire",1)
 
         self.declare_parameter('tuning_mode', False)
 
@@ -36,13 +36,11 @@ class DetectBall(Node):
         self.declare_parameter("x_max",100)
         self.declare_parameter("y_min",0)
         self.declare_parameter("y_max",100)
-        self.declare_parameter("h_min",0)
-        self.declare_parameter("h_max",180)
         self.declare_parameter("s_min",0)
         self.declare_parameter("s_max",255)
         self.declare_parameter("v_min",0)
         self.declare_parameter("v_max",255)
-        self.declare_parameter("sz_min",0)
+        self.declare_parameter("sz_min",7)
         self.declare_parameter("sz_max",100)
         
         self.tuning_mode = self.get_parameter('tuning_mode').get_parameter_value().bool_value
@@ -51,8 +49,6 @@ class DetectBall(Node):
             'x_max': self.get_parameter('x_max').get_parameter_value().integer_value,
             'y_min': self.get_parameter('y_min').get_parameter_value().integer_value,
             'y_max': self.get_parameter('y_max').get_parameter_value().integer_value,
-            'h_min': self.get_parameter('h_min').get_parameter_value().integer_value,
-            'h_max': self.get_parameter('h_max').get_parameter_value().integer_value,
             's_min': self.get_parameter('s_min').get_parameter_value().integer_value,
             's_max': self.get_parameter('s_max').get_parameter_value().integer_value,
             'v_min': self.get_parameter('v_min').get_parameter_value().integer_value,
@@ -90,20 +86,23 @@ class DetectBall(Node):
 
             # Keep the biggest point
             # They are already converted to normalised coordinates
+            largest_keypoint = None
             for i, kp in enumerate(keypoints_norm):
                 x = kp.pt[0]
                 y = kp.pt[1]
                 s = kp.size
 
-                self.get_logger().info(f"Pt {i}: ({x},{y},{s})")
 
-                if (s > point_out.z):                    
-                    point_out.x = x
-                    point_out.y = y
-                    point_out.z = s
+                if largest_keypoint is None or s > largest_keypoint.size:
+                    largest_keypoint = kp
 
-            if (point_out.z > 0):
-                self.ball_pub.publish(point_out) 
+            if largest_keypoint is not None:
+                point_out.x = largest_keypoint.pt[0]
+                point_out.y = largest_keypoint.pt[1]
+                point_out.z = largest_keypoint.size
+                if (point_out.z > 0):
+                    self.get_logger().info(f"Pt: ({point_out.x},{point_out.y},{point_out.z})")
+                    self.ball_pub.publish(point_out)
         except CvBridgeError as e:
             print(e)  
 
@@ -112,11 +111,11 @@ def main(args=None):
 
     rclpy.init(args=args)
 
-    detect_ball = DetectBall()
+    detect_fire = DetectFire()
     while rclpy.ok():
-        rclpy.spin_once(detect_ball)
+        rclpy.spin_once(detect_fire)
         proc.wait_on_gui()
 
-    detect_ball.destroy_node()
+    detect_fire.destroy_node()
     rclpy.shutdown()
 

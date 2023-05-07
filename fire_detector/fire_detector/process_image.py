@@ -17,14 +17,15 @@ def find_fire(image, tuning_params):
     #- Search window
     if search_window is None: search_window = [0.0, 0.0, 1.0, 1.0]
     search_window_px = convert_rect_perc_to_pixels(search_window, image)
-
+    
     #- Convert image from BGR to HSV
     working_image     = cv2.cvtColor(working_image, cv2.COLOR_BGR2HSV)    
-    
+
     # Define the lower and upper bounds for the flame color
-    thresh_min = np.array([10, 100, 100])
-    thresh_max = np.array([50, 255, 255])
-    working_image    = cv2.inRange(working_image, thresh_min, thresh_max)
+    lower_bound = np.array([10, 100, 100])
+    upper_bound = np.array([50, 255, 255])
+    working_image = cv2.inRange(working_image, lower_bound, upper_bound)
+
 
 
     # Dilate and Erode
@@ -43,27 +44,26 @@ def find_fire(image, tuning_params):
 
     # Set up the SimpleBlobdetector with default parameters.
     params = cv2.SimpleBlobDetector_Params()
-
-    # Change thresholds to detect orange/red colors (color of fire)
-    params.minThreshold = 100  # Minimum pixel intensity for blob detection
-    params.maxThreshold = 255  # Maximum pixel intensity for blob detection
-
-    # Filter by Area to remove small noise and very large flames
-    params.filterByArea = False
-    params.minArea = 10  # Minimum area of blob in pixels
-    params.maxArea = 50000  # Maximum area of blob in pixels
-
-    # Filter by Circularity to detect round blobs (typical shape of fire)
-    params.filterByCircularity = True
-    params.minCircularity = 0.5  # Minimum circularity of blob (range from 0 to 1)
-
-    # Filter by Convexity to filter out non-convex shapes
+        
+    # Change thresholds
+    params.minThreshold = 0
+    params.maxThreshold = 100
+        
+    # Filter by Area.
+    params.filterByArea = True
+    params.minArea = 10
+    params.maxArea = 20000
+        
+    # Filter by Circularity
+    params.filterByCircularity = False
+        
+    # Filter by Convexity
     params.filterByConvexity = True
-    params.minConvexity = 0.8  # Minimum convexity of blob (range from 0 to 1)
-
-    # Filter by Inertia to remove long and thin shapes
-    params.filterByInertia = True
-    params.minInertiaRatio = 0.1  # Minimum inertia ratio of blob (range from 0 to 1)
+    params.minConvexity = 0.5
+        
+    # Filter by Inertia
+    params.filterByInertia =True
+    params.minInertiaRatio = 0.1
 
     detector = cv2.SimpleBlobDetector_create(params)
 
@@ -160,8 +160,6 @@ def create_tuning_window(initial_values):
     cv2.createTrackbar("x_max","Tuning",initial_values['x_max'],100,no_op)
     cv2.createTrackbar("y_min","Tuning",initial_values['y_min'],100,no_op)
     cv2.createTrackbar("y_max","Tuning",initial_values['y_max'],100,no_op)
-    cv2.createTrackbar("h_min","Tuning",initial_values['h_min'],180,no_op)
-    cv2.createTrackbar("h_max","Tuning",initial_values['h_max'],180,no_op)
     cv2.createTrackbar("s_min","Tuning",initial_values['s_min'],255,no_op)
     cv2.createTrackbar("s_max","Tuning",initial_values['s_max'],255,no_op)
     cv2.createTrackbar("v_min","Tuning",initial_values['v_min'],255,no_op)
@@ -171,7 +169,7 @@ def create_tuning_window(initial_values):
 
 
 def get_tuning_params():
-    trackbar_names = ["x_min","x_max","y_min","y_max","h_min","h_max","s_min","s_max","v_min","v_max","sz_min","sz_max"]
+    trackbar_names = ["x_min","x_max","y_min","y_max","s_min","s_max","v_min","v_max","sz_min","sz_max"]
     return {key:cv2.getTrackbarPos(key, "Tuning") for key in trackbar_names}
 
 

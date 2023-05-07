@@ -23,9 +23,9 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'detect_ball = fire_detector.detect_ball:main',
-            'detect_ball_3d = fire_detector.detect_ball_3d:main',
-            'follow_ball = fire_detector.follow_ball:main',
+            'detect_fire = fire_detector.detect_fire:main',
+            'detect_fire_3d = fire_detector.detect_fire_3d:main',
+            'follow_fire = fire_detector.follow_fire:main',
         ],
     },
 )

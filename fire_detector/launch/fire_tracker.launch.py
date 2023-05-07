@@ -20,7 +20,7 @@ def generate_launch_description():
     detect_only = LaunchConfiguration('detect_only')
     detect_only_dec = DeclareLaunchArgument(
         'detect_only',
-        default_value='true',
+        default_value='false',
         description='Doesn\'t run the follow component. Useful for just testing the detections.')
     
     follow_only = LaunchConfiguration('follow_only')
@@ -64,7 +64,7 @@ def generate_launch_description():
 
     detect_node = Node(
             package='fire_detector',
-            executable='detect_ball',
+            executable='detect_fire',
             parameters=[params_file, {'tuning_mode': tune_detection}],
             remappings=[('/image_in',image_topic)],
             condition=UnlessCondition(follow_only)
@@ -72,14 +72,14 @@ def generate_launch_description():
 
     detect_3d_node = Node(
             package='fire_detector',
-            executable='detect_ball_3d',
+            executable='detect_fire_3d',
             parameters=[params_file],
             condition=IfCondition(enable_3d_tracker)
          )
 
     follow_node = Node(
             package='fire_detector',
-            executable='follow_ball',
+            executable='follow_fire',
             parameters=[params_file, {'use_sim_time': use_sim_time}],
             remappings=[('/cmd_vel',cmd_vel_topic)],
             condition=UnlessCondition(detect_only)

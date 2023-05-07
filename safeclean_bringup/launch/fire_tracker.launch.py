@@ -10,20 +10,20 @@ from launch.actions import DeclareLaunchArgument
 
 def generate_launch_description():
 
-    my_package_name='my_package'
+    my_package_name='safeclean_bringup'
     sim_mode = LaunchConfiguration('sim_mode')
     sim_mode_dec = DeclareLaunchArgument('sim_mode', default_value='false')
 
-    tracker_params_sim = os.path.join(get_package_share_directory(my_package_name),'config','fire_detector_params_sim.yaml')
-    tracker_params_robot = os.path.join(get_package_share_directory(my_package_name),'config','fire_detector_params_robot.yaml')
+    tracker_params_sim = os.path.join(get_package_share_directory(my_package_name),'config','fire_tracker_params_sim.yaml')
+    tracker_params_robot = os.path.join(get_package_share_directory(my_package_name),'config','fire_tracker_params_robot.yaml')
 
     params_path = PythonExpression(['"',tracker_params_sim, '" if "true" == "', sim_mode, '" else "', tracker_params_robot, '"'])
 
     tracker_launch = IncludeLaunchDescription(
                 PythonLaunchDescriptionSource([os.path.join(
-                    get_package_share_directory('fire_detector'), 'launch', 'fire_detector.launch.py')]),
+                    get_package_share_directory('fire_detector'), 'launch', 'fire_tracker.launch.py')]),
                     launch_arguments={'params_file': params_path,
-                                    'image_topic': '/camera/image_raw',
+                                    'image_topic': '/camera/color/image_raw',
                                     'cmd_vel_topic': '/cmd_vel_tracker',
                                     'enable_3d_tracker': 'true'}.items())
 

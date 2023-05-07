@@ -18,13 +18,13 @@ from geometry_msgs.msg import Point
 from geometry_msgs.msg import Twist
 import time
 
-class FollowBall(Node):
+class FollowFire(Node):
 
     def __init__(self):
-        super().__init__('follow_ball')
+        super().__init__('follow_fire')
         self.subscription = self.create_subscription(
             Point,
-            '/detected_ball',
+            '/detected_fire',
             self.listener_callback,
             10)
         self.publisher_ = self.create_publisher(Twist, '/cmd_vel', 10)
@@ -75,7 +75,7 @@ class FollowBall(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    follow_ball = FollowBall()
-    rclpy.spin(follow_ball)
-    follow_ball.destroy_node()
+    follow_fire = FollowFire()
+    rclpy.spin(follow_fire)
+    follow_fire.destroy_node()
     rclpy.shutdown()
